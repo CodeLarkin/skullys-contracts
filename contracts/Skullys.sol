@@ -1,6 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
+/**
+   ▄████████    ▄█   ▄█▄ ███    █▄   ▄█        ▄█       ▄██   ▄      ▄████████
+  ███    ███   ███ ▄███▀ ███    ███ ███       ███       ███   ██▄   ███    ███
+  ███    █▀    ███▐██▀   ███    ███ ███       ███       ███▄▄▄███   ███    █▀
+  ███         ▄█████▀    ███    ███ ███       ███       ▀▀▀▀▀▀███   ███
+▀███████████ ▀▀█████▄    ███    ███ ███       ███       ▄██   ███ ▀███████████
+         ███   ███▐██▄   ███    ███ ███       ███       ███   ███          ███
+   ▄█    ███   ███ ▀███▄ ███    ███ ███▌    ▄ ███▌    ▄ ███   ███    ▄█    ███
+ ▄████████▀    ███   ▀█▀ ████████▀  █████▄▄██ █████▄▄██  ▀█████▀   ▄████████▀
+**/
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
@@ -8,6 +18,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./ERC2981.sol";
+
 
 contract Skullys is ERC721Enumerable, ERC2981 {
 
@@ -29,13 +40,9 @@ contract Skullys is ERC721Enumerable, ERC2981 {
     uint constant public MAX_SKULLYS = 8888;
     uint constant public SKULLYS_PRICE = 25 ether;
 
-    uint public maxPerTx = 5;
-    uint public maxPerWallet = 5;
-
     uint public presaleStartTime = 1630868400; // 12pm PST
     uint public publicSaleStartTime = presaleStartTime + 9 hours; // starts 9 hours after the presale
 
-    mapping(address => uint) public  skullysPerOwner;
     mapping(address => uint) public  freeSkullysPerOwner;
 
     mapping(address => bool) private isTeam;
@@ -73,29 +80,19 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         _;
     }
 
-    modifier checkRules(address _to, uint _amount) {
-        require(totalSupply() < MAX_SKULLYS, "Sold out! See you on the next drop!");
-        require(totalSupply().add(_amount) <= MAX_SKULLYS, "Purchase would exceed max supply of SKULLYS");
-        require(_amount <= maxPerTx, "Mint exceeds max quantity");
-        _;
-    }
-
     modifier verifyFreeMint(address _to) {
         require(isOnWhiteList[_to] || isTeam[msg.sender], "Must be on the whitelist to mint for free");
         require(freeSkullysPerOwner[_to] == 0, "Can't mint more than one for free");
         require(getStatus() == Status.PresaleStart || getStatus() == Status.PublicSaleStart || isTeam[msg.sender], "Minting has not started");
         require(totalSupply() < MAX_SKULLYS, "Sold Out");
-        require(skullysPerOwner[_to].add(1) <= maxPerWallet, "This mint would make your wallet exceed the maximum Skullys minted");
         _;
     }
 
-    modifier verifyMint(address _to, uint _amount) {
-        require(_amount <= maxPerTx, "Mint quantity to large");
+    modifier verifyMint(address _to) {
         require(getStatus() == Status.PublicSaleStart, "Public sale has not started");
-        require(SKULLYS_PRICE.mul(_amount) <= msg.value, "Didn't send enough payment");
+        require(SKULLYS_PRICE <= msg.value, "Didn't send enough payment");
         require(totalSupply() < MAX_SKULLYS, "Sold Out");
-        require(totalSupply().add(_amount) <= MAX_SKULLYS, "Purchase would exceed max supply. Try a lower amount");
-        require(skullysPerOwner[_to].add(_amount) <= maxPerWallet, "This mint would make your wallet exceed the maximum Skullys minted");
+        require(totalSupply().add(1) <= MAX_SKULLYS, "Purchase would exceed max supply");
         _;
     }
 
@@ -109,13 +106,6 @@ contract Skullys is ERC721Enumerable, ERC2981 {
 
     function setBaseURI(string memory baseURI_) external onlyTeam {
         _baseURIextended = baseURI_;
-    }
-
-    function setMaxTx(uint _amount) external onlyTeam {
-        maxPerTx = _amount;
-    }
-    function setMaxPerWallet(uint _amount) external onlyTeam {
-        maxPerWallet = _amount;
     }
 
     function setManyWhiteList(address[] memory _addr) external onlyTeam {
@@ -138,39 +128,34 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         publicSaleStartTime = _newTime + 9 hours;
     }
 
-    // TODO special check
     function mintFreeSkully() external payable verifyFreeMint(msg.sender) {
         address _to = msg.sender;
 
         _tokenIds.increment();
-        // TODO random id?
         uint mintId = _tokenIds.current();
 
         _safeMint(_to, mintId);
-        skullysPerOwner[_to]++;
         freeSkullysPerOwner[_to]++;
         emit SkullyMinted(mintId, _to);
     }
 
-    function mintSkullys(uint _amount) external payable verifyMint(msg.sender, _amount) {
+    function mintSkully() external payable verifyMint(msg.sender) {
         address _to = msg.sender;
-        for (uint i = 0; i < _amount; i++) {
-            _tokenIds.increment();
-            // TODO random id?
-            uint mintId = _tokenIds.current();
 
-            _safeMint(_to, mintId);
-            skullysPerOwner[_to]++;
-            payable(_team[0]).transfer(msg.value);  // team member 0 gets 100% of mint revenue
-            emit SkullyMinted(mintId, _to);
-        }
+        _tokenIds.increment();
+        uint mintId = _tokenIds.current();
+
+        _safeMint(_to, mintId);
+        payable(_team[0]).transfer(msg.value);  // team member 0 gets 100% of mint revenue
+        emit SkullyMinted(mintId, _to);
     }
+
     function totalSupply() public view override(ERC721Enumerable) returns (uint256) {
         return super.totalSupply();
     }
 
 
-    function _getTotalPaymentShares() internal returns (uint256) {
+    function _getTotalPaymentShares() internal view returns (uint256) {
         uint256 totalShares = 0;
         for (uint i = 0; i < _team.length; i++) {
             totalShares += _team_shares[i];
@@ -207,4 +192,10 @@ contract Skullys is ERC721Enumerable, ERC2981 {
  Code:      @CodeLarkin    :  codelarkin.eth
  Community: @farmgoddao
 
+   ██╗      █████╗ ██████╗ ██╗  ██╗██╗███╗   ██╗
+   ██║     ██╔══██╗██╔══██╗██║ ██╔╝██║████╗  ██║
+   ██║     ███████║██████╔╝█████╔╝ ██║██╔██╗ ██║
+   ██║     ██╔══██║██╔══██╗██╔═██╗ ██║██║╚██╗██║
+   ███████╗██║  ██║██║  ██║██║  ██╗██║██║ ╚████║
+   ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
 **/

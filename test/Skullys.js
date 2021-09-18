@@ -42,7 +42,18 @@ describe("Test harness for Skullys", function () {
         await this.skullys.deployed()
     });
 
+    it("Check some constants", async function () {
+        let maxSupply = await this.skullys.MAX_SKULLYS()
+        expect(maxSupply).to.equal(BigNumber.from(8888))
+
+        let price = await this.skullys.SKULLYS_PRICE()
+        expect(price).to.equal(BigNumber.from(ethers.utils.parseEther("25.0")))
+    });
+
     it("Starting balances are 0", async function () {
+        let supply = await this.skullys.totalSupply()
+        expect(supply).to.equal(BigNumber.from(0))
+
         let bobbyBal = await this.skullys.balanceOf(this.bobby.address)
         expect(bobbyBal).to.equal(BigNumber.from(0))
     });
@@ -67,20 +78,28 @@ describe("Test harness for Skullys", function () {
         let bobbyBal = await this.skullys.balanceOf(this.bobby.address)
         expect(bobbyBal).to.equal(BigNumber.from(1))
     });
+
     it("In public-sale, can mint a Skullys whether whitelisted or not", async function () {
         await startPublicSaleNow(this.provider, this.skullys)
         await this.skullys.connect(this.alice).setManyWhiteList([this.bobby.address, this.carly.address])
 
         await this.skullys.connect(this.bobby).mintFreeSkully()
-        await this.skullys.connect(this.bobby).mintSkullys(1, { value: ethers.utils.parseEther("25.0") })
-        await this.skullys.connect(this.dobby).mintSkullys(1, { value: ethers.utils.parseEther("25.0") })
-        await this.skullys.connect(this.erkle).mintSkullys(1, { value: ethers.utils.parseEther("25.0") })
+        await this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("25.0") })
+        await this.skullys.connect(this.dobby).mintSkully({ value: ethers.utils.parseEther("25.0") })
+        await this.skullys.connect(this.dobby).mintSkully({ value: ethers.utils.parseEther("25.0") })
+        await this.skullys.connect(this.erkle).mintSkully({ value: ethers.utils.parseEther("25.0") })
         let bobbyBal = await this.skullys.balanceOf(this.bobby.address)
         let dobbyBal = await this.skullys.balanceOf(this.dobby.address)
         let erkleBal = await this.skullys.balanceOf(this.erkle.address)
         expect(bobbyBal).to.equal(BigNumber.from(2))
-        expect(dobbyBal).to.equal(BigNumber.from(1))
+        expect(dobbyBal).to.equal(BigNumber.from(2))
         expect(erkleBal).to.equal(BigNumber.from(1))
     });
+
+    // TODO
+    //    can't mint in presale unless whitelisted
+    //    can't mint >1 in presale
+    //    royalties work
+    //    special owners get royalties
 
 });
