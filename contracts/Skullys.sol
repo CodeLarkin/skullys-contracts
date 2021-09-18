@@ -6,12 +6,10 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "./ERC2981.sol";
 
-// TODO confirm need for Pausable
-contract Skullys is ERC721Enumerable, ERC2981, Pausable, PaymentSplitter {
+contract Skullys is ERC721Enumerable, ERC2981 {
 
     using SafeMath for uint;
     using SafeMath for uint256;
@@ -28,7 +26,7 @@ contract Skullys is ERC721Enumerable, ERC2981, Pausable, PaymentSplitter {
     string public PROVENANCE = "";
     string private _baseURIextended = "";
 
-    uint constant public MAX_SKULLYS = 1000;
+    uint constant public MAX_SKULLYS = 8888;
     uint constant public SKULLYS_PRICE = 25 ether;
 
     uint public maxPerTx = 5;
@@ -50,12 +48,17 @@ contract Skullys is ERC721Enumerable, ERC2981, Pausable, PaymentSplitter {
     ];
 
     // team address payout shares
-    uint256[] private _team_shares = [75, 25];
+    uint256[] private _team_shares = [65, 25];  // 65, 25, 2*5
+
+    // payout shares for holders of special tokenIds
+    uint256[] private _specials        = [6, 66, 420, 666, 6666];
+    uint256[] private _specials_shares = [2,  2,   2,   2,    2];
+
+    // For EIP-2981
     uint256 constant private ROYALTIES_PERCENTAGE = 10;
 
     constructor()
         ERC721("Skullys... Join the cult and grab some of the 1000 Skullys", "SKULLY")
-        PaymentSplitter(_team, _team_shares)
     {
         isTeam[msg.sender] = true;
         isTeam[0xC87bf1972Dd048404CBd3FbA300b69277552C472] = true;
@@ -166,10 +169,33 @@ contract Skullys is ERC721Enumerable, ERC2981, Pausable, PaymentSplitter {
         return super.totalSupply();
     }
 
+
+    function _getTotalPaymentShares() internal returns (uint256) {
+        uint256 totalShares = 0;
+        for (uint i = 0; i < _team.length; i++) {
+            totalShares += _team_shares[i];
+        }
+        for (uint i = 0; i < _specials.length; i++) {
+            totalShares += _specials_shares[i];
+        }
+        return totalShares;
+    }
+
     function withdrawAll() public onlyTeam {
+
+        uint256 totalShares = _getTotalPaymentShares();
+
+        uint256 totalReceived = address(this).balance;
+
         for (uint i = 0; i < _team.length; i++) {
             address payable wallet = payable(_team[i]);
-            release(wallet);
+            uint256 payment = (totalReceived * _team_shares[i]) / totalShares;
+            Address.sendValue(wallet, payment);
+        }
+        for (uint i = 0; i < _specials.length; i++) {
+            address payable wallet = payable(ownerOf(_specials[i]));
+            uint256 payment = (totalReceived * _specials_shares[i]) / totalShares;
+            Address.sendValue(wallet, payment);
         }
     }
 
