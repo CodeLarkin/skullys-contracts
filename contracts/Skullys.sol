@@ -76,7 +76,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
     }
 
     modifier onlyTeam() {
-        require(isTeam[msg.sender], "Sneaky sneaky! You are not part of the team");
+        require(isTeam[msg.sender], "Can't do that, you are not part of the team");
         _;
     }
 
@@ -167,6 +167,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
     }
 
     function withdrawAll() public onlyTeam {
+        require(address(this).balance > 0, "Cannot withdraw, balance is empty");
 
         uint256 totalShares = _getTotalPaymentShares();
 
@@ -178,11 +179,19 @@ contract Skullys is ERC721Enumerable, ERC2981 {
             Address.sendValue(wallet, payment);
         }
         for (uint i = 0; i < _specials.length; i++) {
-            address payable wallet = payable(ownerOf(_specials[i]));
+            address payable wallet;
+            if (totalSupply() < _specials[i]) {
+                // if this special tokenId hasn't been minted yet, send to owner
+                wallet = payable(_team[0]);
+            } else {
+                wallet = payable(ownerOf(_specials[i]));
+            }
             uint256 payment = (totalReceived * _specials_shares[i]) / totalShares;
             Address.sendValue(wallet, payment);
         }
     }
+
+    receive () external payable {}
 
     event SkullyMinted(uint _id, address _address);
 }
