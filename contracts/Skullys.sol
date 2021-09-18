@@ -8,12 +8,13 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
+import "./ERC2981.sol";
 
 // TODO confirm need for Pausable
-// TODO ERC2981 for royalties
-contract Skullys is ERC721Enumerable, Pausable, PaymentSplitter {
+contract Skullys is ERC721Enumerable, ERC2981, Pausable, PaymentSplitter {
 
     using SafeMath for uint;
+    using SafeMath for uint256;
     using Counters for Counters.Counter;
 
     enum Status {
@@ -44,22 +45,25 @@ contract Skullys is ERC721Enumerable, Pausable, PaymentSplitter {
 
     // Team Addresses
     address[] private _team = [
-        0x0000000000000000000000000000000000069420, // 90 - Core team  // TODO fix addr
-        0x14E8F54f35eE42Cdf436A19086659B34dA6D9D47  // 10 - Dev
+        0xC87bf1972Dd048404CBd3FbA300b69277552C472, // 75 - Art, generative art, social media
+        0x14E8F54f35eE42Cdf436A19086659B34dA6D9D47  // 25 - Dev
     ];
 
     // team address payout shares
-    uint256[] private _team_shares = [90, 10];
+    uint256[] private _team_shares = [75, 25];
+    uint256 constant private ROYALTIES_PERCENTAGE = 10;
 
     constructor()
         ERC721("Skullys... Join the cult and grab some of the 1000 Skullys", "SKULLY")
         PaymentSplitter(_team, _team_shares)
     {
         isTeam[msg.sender] = true;
-        isTeam[0x0000000000000000000000000000000000069420] = true;  // TODO fix addr
-    }
+        isTeam[0xC87bf1972Dd048404CBd3FbA300b69277552C472] = true;
+        isTeam[0x14E8F54f35eE42Cdf436A19086659B34dA6D9D47] = true;
 
-    event SkullyMinted(uint _id, address _address);
+        _setReceiver(address(this));
+        _setRoyaltyPercentage(ROYALTIES_PERCENTAGE);
+    }
 
     modifier onlyTeam() {
         require(isTeam[msg.sender], "Sneaky sneaky! You are not part of the team");
@@ -154,6 +158,7 @@ contract Skullys is ERC721Enumerable, Pausable, PaymentSplitter {
 
             _safeMint(_to, mintId);
             skullysPerOwner[_to]++;
+            payable(_team[0]).transfer(msg.value);  // team member 0 gets 100% of mint revenue
             emit SkullyMinted(mintId, _to);
         }
     }
@@ -167,6 +172,8 @@ contract Skullys is ERC721Enumerable, Pausable, PaymentSplitter {
             release(wallet);
         }
     }
+
+    event SkullyMinted(uint _id, address _address);
 }
 /**
 
