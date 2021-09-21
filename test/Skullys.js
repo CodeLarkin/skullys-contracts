@@ -127,7 +127,7 @@ describe("Test harness for Skullys", function () {
         expect(bobbyBal).to.equal(BigNumber.from(0))
     });
 
-    it("In pre-sale, can mint a Skullys if whitelisted", async function () {
+    it("In pre-sale, can mint a Skully if whitelisted", async function () {
         await startPreSaleNow(this.provider, this.skullys)
         await this.skullys.connect(this.alice).setManyWhiteList([this.bobby.address, this.carly.address])
 
