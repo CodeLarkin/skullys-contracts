@@ -169,10 +169,4 @@ describe("Test harness for Skullys", function () {
         expect(erkleBal).to.equal(BigNumber.from(1))
     });
 
-    // TODO
-    //    can't mint in presale unless whitelisted
-    //    can't mint >1 in presale
-    //    royalties work
-    //    special owners get royalties
-
 });

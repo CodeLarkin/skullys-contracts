@@ -84,14 +84,14 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         require(isOnWhiteList[_to] || isTeam[msg.sender], "Must be on the whitelist to mint for free");
         require(freeSkullysPerOwner[_to] == 0, "Can't mint more than one for free");
         require(getStatus() == Status.PresaleStart || getStatus() == Status.PublicSaleStart || isTeam[msg.sender], "Minting has not started");
-        require(totalSupply() < MAX_SKULLYS, "Sold Out");
+        require(totalSupply() < MAX_SKULLYS, "Sold out");
         _;
     }
 
     modifier verifyMint(address _to) {
         require(getStatus() == Status.PublicSaleStart, "Public sale has not started");
         require(SKULLYS_PRICE <= msg.value, "Didn't send enough payment");
-        require(totalSupply() < MAX_SKULLYS, "Sold Out");
+        require(totalSupply() < MAX_SKULLYS, "Sold out");
         require(totalSupply().add(1) <= MAX_SKULLYS, "Purchase would exceed max supply");
         _;
     }
@@ -191,6 +191,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         }
     }
 
+    // ensure this contract can receive payments (royalties)
     receive () external payable {}
 
     event SkullyMinted(uint _id, address _address);
