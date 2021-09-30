@@ -55,10 +55,10 @@ describe("Test harness for Skullys", function () {
 
     it("Check some constants", async function () {
         let maxSupply = await this.skullys.MAX_SKULLYS()
-        expect(maxSupply).to.equal(BigNumber.from(8888))
+        expect(maxSupply).to.equal(BigNumber.from(1000))
 
         let price = await this.skullys.SKULLYS_PRICE()
-        expect(price).to.equal(BigNumber.from(ethers.utils.parseEther("25.0")))
+        expect(price).to.equal(BigNumber.from(ethers.utils.parseEther("50.0")))
     });
 
     it("Starting supply and balances are 0", async function () {
@@ -155,10 +155,10 @@ describe("Test harness for Skullys", function () {
 
         // mint some
         await this.skullys.connect(this.bobby).mintFreeSkully()
-        await this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("25.0") })
-        await this.skullys.connect(this.dobby).mintSkully({ value: ethers.utils.parseEther("25.0") })
-        await this.skullys.connect(this.dobby).mintSkully({ value: ethers.utils.parseEther("25.0") })
-        await this.skullys.connect(this.erkle).mintSkully({ value: ethers.utils.parseEther("25.0") })
+        await this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("50.0") })
+        await this.skullys.connect(this.dobby).mintSkully({ value: ethers.utils.parseEther("50.0") })
+        await this.skullys.connect(this.dobby).mintSkully({ value: ethers.utils.parseEther("50.0") })
+        await this.skullys.connect(this.erkle).mintSkully({ value: ethers.utils.parseEther("50.0") })
 
         // check balances
         let bobbyBal = await this.skullys.balanceOf(this.bobby.address)

@@ -37,10 +37,10 @@ contract Skullys is ERC721Enumerable, ERC2981 {
     string public PROVENANCE = "";
     string private _baseURIextended = "";
 
-    uint constant public MAX_SKULLYS = 8888;
-    uint constant public SKULLYS_PRICE = 25 ether;
+    uint constant public MAX_SKULLYS = 1000;
+    uint constant public SKULLYS_PRICE = 50 ether;
 
-    uint public presaleStartTime = 1630868400; // 12pm PST
+    uint public presaleStartTime = 2547586402; // default to some time far in the future
     uint public publicSaleStartTime = presaleStartTime + 9 hours; // starts 9 hours after the presale
 
     mapping(address => uint) public  freeSkullysPerOwner;
@@ -50,16 +50,16 @@ contract Skullys is ERC721Enumerable, ERC2981 {
 
     // Team Addresses
     address[] private _team = [
-        0xC87bf1972Dd048404CBd3FbA300b69277552C472, // 75 - Art, generative art, social media
+        0xC87bf1972Dd048404CBd3FbA300b69277552C472, // 65 - Art, generative art, social media
         0x14E8F54f35eE42Cdf436A19086659B34dA6D9D47  // 25 - Dev
     ];
 
     // team address payout shares
-    uint256[] private _team_shares = [65, 25];  // 65, 25, 2*5
+    uint256[] private _team_shares = [65, 25];  // 65 and 25 for team, and then 2*5 for specials
 
     // payout shares for holders of special tokenIds
-    uint256[] private _specials        = [6, 66, 420, 666, 6666];
-    uint256[] private _specials_shares = [2,  2,   2,   2,    2];
+    uint256[] private _specials        = [6, 66, 69, 420, 666];
+    uint256[] private _specials_shares = [2,  2,  2,   2,   2];
 
     // For EIP-2981
     uint256 constant private ROYALTIES_PERCENTAGE = 10;
@@ -128,7 +128,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         publicSaleStartTime = _newTime + 9 hours;
     }
 
-    function mintFreeSkully() external payable verifyFreeMint(msg.sender) {
+    function mintFreeSkully() external verifyFreeMint(msg.sender) {
         address _to = msg.sender;
 
         _tokenIds.increment();
