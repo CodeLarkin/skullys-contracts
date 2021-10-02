@@ -85,7 +85,7 @@ describe("Test harness for Skullys", function () {
 
     it("Can withdraw earnings (royalties) from contract", async function () {
         // alice sends some ether to the skullys contract (emulate a marketplace paying royalties to the contract address)
-        await this.alice.sendTransaction({ to: this.skullys.address, value: ethers.utils.parseEther("100.0") })
+        await this.alice.sendTransaction({ to: this.skullys.address, value: ethers.utils.parseEther("100") })
         let skullysBal = await this.provider.getBalance(this.skullys.address)
         expect(skullysBal).to.equal(BigNumber.from(ethers.utils.parseEther("100")))
 
@@ -167,6 +167,27 @@ describe("Test harness for Skullys", function () {
         expect(bobbyBal).to.equal(BigNumber.from(2))
         expect(dobbyBal).to.equal(BigNumber.from(2))
         expect(erkleBal).to.equal(BigNumber.from(1))
+    });
+
+    it("Expected URI failures", async function () {
+        await expectRevert(
+            this.skullys.tokenURI(1),
+            "ERC721Metadata: URI query for nonexistent token"
+        )
+        await expectRevert(
+            this.skullys.connect(this.bobby).setBaseURI('SHOULD NOT WORK'),
+            "Can't do that, you are not part of the team"
+        )
+
+    });
+    it("Base URI and tokenURIs work", async function () {
+        await startPublicSaleNow(this.provider, this.skullys)
+
+        // mint some
+        await this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("50.0") })
+
+        await this.skullys.connect(this.alice).setBaseURI('ipfs://<skullys-test-base-uri>/')
+        console.log("Got token URI: " + await this.skullys.tokenURI(1))
     });
 
 });
