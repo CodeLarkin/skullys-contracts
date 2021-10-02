@@ -178,7 +178,6 @@ describe("Test harness for Skullys", function () {
             this.skullys.connect(this.bobby).setBaseURI('SHOULD NOT WORK'),
             "Can't do that, you are not part of the team"
         )
-
     });
     it("Base URI and tokenURIs work", async function () {
         await startPublicSaleNow(this.provider, this.skullys)
@@ -186,8 +185,22 @@ describe("Test harness for Skullys", function () {
         // mint some
         await this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("50.0") })
 
-        await this.skullys.connect(this.alice).setBaseURI('ipfs://<skullys-test-base-uri>/')
-        console.log("Got token URI: " + await this.skullys.tokenURI(1))
+        const baseURI = 'ipfs://<skullys-test-base-uri>/'
+        await this.skullys.connect(this.alice).setBaseURI(baseURI)
+        const tokenURI = await this.skullys.tokenURI(1)
+        expect(tokenURI).to.equal(baseURI + 1)
     });
 
+    it("Expected provenance hash failures", async function () {
+        await expectRevert(
+            this.skullys.connect(this.bobby).setProvenanceHash('SHOULD NOT WORK'),
+            "Can't do that, you are not part of the team"
+        )
+    });
+    it("Set the provenance hash", async function () {
+        const setProvenance = '<TEST-PROVENANCE-HASH>'
+        await this.skullys.connect(this.alice).setProvenanceHash(setProvenance)
+        const probedProvenance = await this.skullys.PROVENANCE()
+        expect(setProvenance).to.equal(probedProvenance)
+    });
 });
