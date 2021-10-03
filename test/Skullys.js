@@ -4,9 +4,12 @@ const { ethers, waffle } = hre;
 const { BigNumber, utils } = ethers;
 const { constants, expectRevert } = require('@openzeppelin/test-helpers')
 
+
 describe("Test harness for Skullys", function () {
-    let artist = "0xC87bf1972Dd048404CBd3FbA300b69277552C472"
-    let dev    = "0x14E8F54f35eE42Cdf436A19086659B34dA6D9D47"
+    const artist = "0xC87bf1972Dd048404CBd3FbA300b69277552C472"
+    const dev    = "0x14E8F54f35eE42Cdf436A19086659B34dA6D9D47"
+
+    const COST = ethers.utils.parseEther("100.0")
 
     // start helpers
     async function startPreSaleNow (provider, skullys) {
@@ -58,7 +61,7 @@ describe("Test harness for Skullys", function () {
         expect(maxSupply).to.equal(BigNumber.from(1000))
 
         let price = await this.skullys.SKULLYS_PRICE()
-        expect(price).to.equal(BigNumber.from(ethers.utils.parseEther("50.0")))
+        expect(price).to.equal(BigNumber.from(COST))
     });
 
     it("Starting supply and balances are 0", async function () {
@@ -153,12 +156,12 @@ describe("Test harness for Skullys", function () {
         await startPreSaleNow(this.provider, this.skullys)
         // Can't pay to mint in pre-sale if not whitelisted
         await expectRevert(
-            this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("50.0") }),
+            this.skullys.connect(this.bobby).mintSkully({ value: COST }),
             "Public sale has not started"
         )
         // Can't pay to mint in pre-sale even if whitelisted
         await expectRevert(
-            this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("50.0") }),
+            this.skullys.connect(this.bobby).mintSkully({ value: COST }),
             "Public sale has not started"
         )
         let bobbyBal = await this.skullys.balanceOf(this.bobby.address)
@@ -171,10 +174,10 @@ describe("Test harness for Skullys", function () {
 
         // mint some
         await this.skullys.connect(this.bobby).mintFreeSkully()
-        await this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("50.0") })
-        await this.skullys.connect(this.dobby).mintSkully({ value: ethers.utils.parseEther("50.0") })
-        await this.skullys.connect(this.dobby).mintSkully({ value: ethers.utils.parseEther("50.0") })
-        await this.skullys.connect(this.erkle).mintSkully({ value: ethers.utils.parseEther("50.0") })
+        await this.skullys.connect(this.bobby).mintSkully({ value: COST })
+        await this.skullys.connect(this.dobby).mintSkully({ value: COST })
+        await this.skullys.connect(this.dobby).mintSkully({ value: COST })
+        await this.skullys.connect(this.erkle).mintSkully({ value: COST })
 
         // check balances
         let bobbyBal = await this.skullys.balanceOf(this.bobby.address)
@@ -199,7 +202,7 @@ describe("Test harness for Skullys", function () {
         await startPublicSaleNow(this.provider, this.skullys)
 
         // mint some
-        await this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("50.0") })
+        await this.skullys.connect(this.bobby).mintSkully({ value: COST })
 
         const baseURI = 'ipfs://<skullys-test-base-uri>/'
         await this.skullys.connect(this.alice).setBaseURI(baseURI)
