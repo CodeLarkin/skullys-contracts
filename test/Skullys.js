@@ -85,9 +85,9 @@ describe("Test harness for Skullys", function () {
 
     it("Can withdraw earnings (royalties) from contract", async function () {
         // alice sends some ether to the skullys contract (emulate a marketplace paying royalties to the contract address)
-        await this.alice.sendTransaction({ to: this.skullys.address, value: ethers.utils.parseEther("100") })
+        await this.alice.sendTransaction({ to: this.skullys.address, value: ethers.utils.parseEther("100.1") })
         let skullysBal = await this.provider.getBalance(this.skullys.address)
-        expect(skullysBal).to.equal(BigNumber.from(ethers.utils.parseEther("100")))
+        expect(skullysBal).to.equal(BigNumber.from(ethers.utils.parseEther("100.1")))
 
         // alice triggers the withrawAll function which distributes the contract balance back to the team, etc
         await this.skullys.connect(this.alice).withdrawAll()
@@ -99,8 +99,8 @@ describe("Test harness for Skullys", function () {
         // make sure artist and dev have appropriate amounts
         let artBal = await this.provider.getBalance(artist)
         let devBal = await this.provider.getBalance(dev)
-        expect(artBal).to.equal(BigNumber.from(ethers.utils.parseEther("75")))
-        expect(devBal).to.equal(BigNumber.from(ethers.utils.parseEther("25")))
+        expect(artBal).to.equal(BigNumber.from(ethers.utils.parseEther("75.075")))
+        expect(devBal).to.equal(BigNumber.from(ethers.utils.parseEther("25.025")))
     });
 
     it("Team can mint before pre-sale", async function () {
