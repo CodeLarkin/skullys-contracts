@@ -149,6 +149,22 @@ describe("Test harness for Skullys", function () {
         expect(bobbyBal).to.equal(BigNumber.from(1))
     });
 
+    it("In pre-sale, can't pay to mint a Skully", async function () {
+        await startPreSaleNow(this.provider, this.skullys)
+        // Can't pay to mint in pre-sale if not whitelisted
+        await expectRevert(
+            this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("50.0") }),
+            "Public sale has not started"
+        )
+        // Can't pay to mint in pre-sale even if whitelisted
+        await expectRevert(
+            this.skullys.connect(this.bobby).mintSkully({ value: ethers.utils.parseEther("50.0") }),
+            "Public sale has not started"
+        )
+        let bobbyBal = await this.skullys.balanceOf(this.bobby.address)
+        expect(bobbyBal).to.equal(BigNumber.from(0))
+    });
+
     it("In public-sale, can mint Skullys (multiple) whether whitelisted or not", async function () {
         await startPublicSaleNow(this.provider, this.skullys)
         await this.skullys.connect(this.alice).setManyWhiteList([this.bobby.address, this.carly.address])
