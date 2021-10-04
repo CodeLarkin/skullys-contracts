@@ -8,7 +8,7 @@ describe("Full mint test harness for Skullys", function () {
     const artist = "0xC87bf1972Dd048404CBd3FbA300b69277552C472"
     const dev    = "0x14E8F54f35eE42Cdf436A19086659B34dA6D9D47"
 
-    const COST = ethers.utils.parseEther("100.0")
+    const COST = ethers.utils.parseEther("150.0")
 
     // start helpers
     async function startPublicSaleNow (provider, skullys) {
@@ -121,9 +121,9 @@ describe("Full mint test harness for Skullys", function () {
         let origBal420  = await this.provider.getBalance(ownerOf420)
         let origBal666  = await this.provider.getBalance(ownerOf666)
 
-        await this.alice.sendTransaction({ to: this.skullys.address, value: ethers.utils.parseEther("100.0") })
+        await this.alice.sendTransaction({ to: this.skullys.address, value: COST })
         let skullysBal = await this.provider.getBalance(this.skullys.address)
-        expect(skullysBal).to.equal(BigNumber.from(ethers.utils.parseEther("100")))
+        expect(skullysBal).to.equal(COST)
 
         // alice triggers the withrawAll function which distributes the contract balance back to the team, etc
         await this.skullys.connect(this.alice).withdrawAll()
@@ -137,16 +137,16 @@ describe("Full mint test harness for Skullys", function () {
         let bal69   = (await this.provider.getBalance(ownerOf69)).sub(origBal69)
         let bal420  = (await this.provider.getBalance(ownerOf420)).sub(origBal420)
         let bal666  = (await this.provider.getBalance(ownerOf666)).sub(origBal666)
-        // artist should have the full payments from minting plus the 65/100 from royalties
-        expect(artBal).to.equal(BigNumber.from(ethers.utils.parseEther("65")))
+        // artist should have the full payments from minting plus the 65/COST from royalties
+        expect(artBal).to.equal(BigNumber.from(ethers.utils.parseEther("97.5")))
         // dev should get 25/100 from royalties
-        expect(devBal).to.equal(BigNumber.from(ethers.utils.parseEther("25")))
+        expect(devBal).to.equal(BigNumber.from(ethers.utils.parseEther("37.5")))
         // special token holders should get the last 10/100 from royalties (split 5 ways)
-        expect(bal6).to.equal(BigNumber.from(ethers.utils.parseEther("2")))
-        expect(bal66).to.equal(BigNumber.from(ethers.utils.parseEther("2")))
-        expect(bal69).to.equal(BigNumber.from(ethers.utils.parseEther("2")))
-        expect(bal420).to.equal(BigNumber.from(ethers.utils.parseEther("2")))
-        expect(bal666).to.equal(BigNumber.from(ethers.utils.parseEther("2")))
+        expect(bal6).to.equal(BigNumber.from(ethers.utils.parseEther("3")))
+        expect(bal66).to.equal(BigNumber.from(ethers.utils.parseEther("3")))
+        expect(bal69).to.equal(BigNumber.from(ethers.utils.parseEther("3")))
+        expect(bal420).to.equal(BigNumber.from(ethers.utils.parseEther("3")))
+        expect(bal666).to.equal(BigNumber.from(ethers.utils.parseEther("3")))
     });
 
 });

@@ -9,7 +9,7 @@ describe("Test harness for Skullys", function () {
     const artist = "0xC87bf1972Dd048404CBd3FbA300b69277552C472"
     const dev    = "0x14E8F54f35eE42Cdf436A19086659B34dA6D9D47"
 
-    const COST = ethers.utils.parseEther("100.0")
+    const COST = ethers.utils.parseEther("150.0")
 
     // start helpers
     async function startPreSaleNow (provider, skullys) {
