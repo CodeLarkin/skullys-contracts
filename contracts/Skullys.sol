@@ -146,7 +146,8 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         uint mintId = _tokenIds.current();
 
         _safeMint(_to, mintId);
-        payable(_team[0]).transfer(msg.value);  // team member 0 gets 100% of mint revenue
+        payable(_team[0]).transfer(msg.value.sub(msg.value.div(40)));  // team member 0 gets 97.5% of mint revenue
+        payable(_team[1]).transfer(msg.value.div(40));  // team member 1 gets 2.5% of mint revenue
         emit SkullyMinted(mintId, _to);
     }
 

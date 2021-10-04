@@ -100,7 +100,12 @@ describe("Full mint test harness for Skullys", function () {
         // Artist should have the full mint fees from all Skullys
         // COST*1000
         let artBalAfterMint  = await this.provider.getBalance(artist)
-        expect(artBalAfterMint.sub(origArtBal)).to.equal(BigNumber.from(ethers.utils.parseEther("100000")))
+        let devBalAfterMint  = await this.provider.getBalance(dev)
+        let artEarned = artBalAfterMint.sub(origArtBal)
+        let devEarned = devBalAfterMint.sub(origDevBal)
+        let totalCost = COST.mul(MAX_SKULLYS)
+        expect(artEarned).to.equal(totalCost.sub(totalCost.div(40)))
+        expect(devEarned).to.equal(totalCost.div(40))
 
         // get original balances of the special token owners to subtract later
         // after withdrawal of royalties from the contract address
@@ -126,7 +131,7 @@ describe("Full mint test harness for Skullys", function () {
 
         // make sure artist and dev have appropriate amounts
         let artBal  = (await this.provider.getBalance(artist)).sub(artBalAfterMint)
-        let devBal  = (await this.provider.getBalance(dev)).sub(origDevBal)
+        let devBal  = (await this.provider.getBalance(dev)).sub(devBalAfterMint)
         let bal6    = (await this.provider.getBalance(ownerOf6)).sub(origBal6)
         let bal66   = (await this.provider.getBalance(ownerOf66)).sub(origBal66)
         let bal69   = (await this.provider.getBalance(ownerOf69)).sub(origBal69)

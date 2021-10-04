@@ -169,6 +169,8 @@ describe("Test harness for Skullys", function () {
     });
 
     it("In public-sale, can mint Skullys (multiple) whether whitelisted or not", async function () {
+        let initArtBal = await this.provider.getBalance(artist);
+        let initDevBal = await this.provider.getBalance(dev);
         await startPublicSaleNow(this.provider, this.skullys)
         await this.skullys.connect(this.alice).setManyWhiteList([this.bobby.address, this.carly.address])
 
@@ -186,6 +188,12 @@ describe("Test harness for Skullys", function () {
         expect(bobbyBal).to.equal(BigNumber.from(2))
         expect(dobbyBal).to.equal(BigNumber.from(2))
         expect(erkleBal).to.equal(BigNumber.from(1))
+
+        let artEarned = (await this.provider.getBalance(artist)).sub(initArtBal);
+        let devEarned = (await this.provider.getBalance(dev)).sub(initDevBal);
+        let totalCost = COST.mul(4)
+        expect(artEarned).to.equal(totalCost.sub(totalCost.div(40)))
+        expect(devEarned).to.equal(totalCost.div(40))
     });
 
     it("Expected URI failures", async function () {
