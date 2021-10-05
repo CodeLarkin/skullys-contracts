@@ -12,11 +12,11 @@ describe("Full mint test harness for Skullys", function () {
 
     // start helpers
     async function startPublicSaleNow (provider, skullys) {
-        // set presale to 9 hours ago so public sale is live now
+        // set presale to 24 hours ago so public sale is live now
         let blockNum = await provider.getBlockNumber()
         let initTime = (await provider.getBlock(blockNum)).timestamp
         let initDate = new Date(initTime)
-        initDate.setHours(initDate.getHours() - 9)
+        initDate.setHours(initDate.getHours() - 24)
         await skullys.setPreSaleTime(BigNumber.from(initDate.valueOf()))
     }
     // end helpers

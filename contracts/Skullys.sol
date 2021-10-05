@@ -41,7 +41,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
     uint constant public SKULLYS_PRICE = 150 ether;
 
     uint public presaleStartTime = 2547586402; // default to some time far in the future
-    uint public publicSaleStartTime = presaleStartTime + 9 hours; // starts 9 hours after the presale
+    uint public publicSaleStartTime = presaleStartTime + 24 hours; // starts 9 hours after the presale
 
     mapping(address => uint) public  freeSkullysPerOwner;
 
