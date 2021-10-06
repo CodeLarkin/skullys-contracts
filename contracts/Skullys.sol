@@ -67,7 +67,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
     uint256 constant private ROYALTIES_PERCENTAGE = 10;
 
     constructor()
-        ERC721("Skullys... Join the cult and grab some of the 1000 Skullys", "SKULLY")
+        ERC721("Skullys... Join the cult.", "SKULLY")
     {
         isTeam[msg.sender] = true;
         isTeam[0xC87bf1972Dd048404CBd3FbA300b69277552C472] = true;
@@ -188,9 +188,10 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         for (uint i = 0; i < _specials.length; i++) {
             address payable wallet;
             if (totalSupply() < _specials[i]) {
-                // if this special tokenId hasn't been minted yet, send to owner
+                // if this special tokenId hasn't been minted yet, send payment shares to artist
                 wallet = payable(_team[0]);
             } else {
+                // payout holder of this special tokenId
                 wallet = payable(ownerOf(_specials[i]));
             }
             uint256 payment = (totalReceived * _specials_shares[i]) / totalShares;
