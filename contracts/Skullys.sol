@@ -39,14 +39,16 @@ contract Skullys is ERC721Enumerable, ERC2981 {
 
     uint constant public MAX_SKULLYS = 1000;
     uint constant public SKULLYS_PRICE = 150 ether;
+    uint constant public MAX_SKULLYS_PER_OWNER = 5;
 
     uint public presaleStartTime = 2547586402; // default to some time far in the future
-    uint public publicSaleStartTime = presaleStartTime + 24 hours; // starts 9 hours after the presale
+    uint public publicSaleStartTime = presaleStartTime + 24 hours; // starts 24 hours after the presale
 
     mapping(address => uint) public  freeSkullysPerOwner;
+    mapping(address => uint) public skullysMintedByOwner;
 
     mapping(address => bool) private isTeam;
-    mapping(address => bool) private isOnWhiteList;
+    mapping(address => bool) public isOnWhiteList;
 
     // Team Addresses
     address[] private _team = [
@@ -85,6 +87,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         require(freeSkullysPerOwner[_to] == 0, "Can't mint more than one for free");
         require(getStatus() == Status.PresaleStart || getStatus() == Status.PublicSaleStart || isTeam[msg.sender], "Minting has not started");
         require(totalSupply() < MAX_SKULLYS, "Sold out");
+        require(skullysMintedByOwner[msg.sender] < MAX_SKULLYS_PER_OWNER, "Can't mint more than 5 Skullys");
         _;
     }
 
@@ -93,6 +96,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         require(SKULLYS_PRICE <= msg.value, "Didn't send enough payment");
         require(totalSupply() < MAX_SKULLYS, "Sold out");
         require(totalSupply().add(1) <= MAX_SKULLYS, "Purchase would exceed max supply");
+        require(skullysMintedByOwner[msg.sender] < MAX_SKULLYS_PER_OWNER, "Can't mint more than 5 Skullys");
         _;
     }
 
@@ -135,6 +139,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         uint mintId = _tokenIds.current();
 
         _safeMint(_to, mintId);
+        skullysMintedByOwner[_to]++;
         freeSkullysPerOwner[_to]++;
         emit SkullyMinted(mintId, _to);
     }
@@ -146,6 +151,7 @@ contract Skullys is ERC721Enumerable, ERC2981 {
         uint mintId = _tokenIds.current();
 
         _safeMint(_to, mintId);
+        skullysMintedByOwner[_to]++;
         payable(_team[0]).transfer(msg.value.sub(msg.value.div(40)));  // team member 0 gets 97.5% of mint revenue
         payable(_team[1]).transfer(msg.value.div(40));  // team member 1 gets 2.5% of mint revenue
         emit SkullyMinted(mintId, _to);

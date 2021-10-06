@@ -10,6 +10,7 @@ describe("Test harness for Skullys", function () {
     const dev    = "0x14E8F54f35eE42Cdf436A19086659B34dA6D9D47"
 
     const COST = ethers.utils.parseEther("150.0")
+    const MAX_PER_OWNER = 5
 
     // start helpers
     async function startPreSaleNow (provider, skullys) {
@@ -166,6 +167,22 @@ describe("Test harness for Skullys", function () {
         )
         let bobbyBal = await this.skullys.balanceOf(this.bobby.address)
         expect(bobbyBal).to.equal(BigNumber.from(0))
+    });
+
+    it("Can only mint up to 5 Skullys", async function () {
+        await startPublicSaleNow(this.provider, this.skullys)
+        await this.skullys.connect(this.alice).setManyWhiteList([this.bobby.address, this.carly.address])
+
+        // mint some
+        await this.skullys.connect(this.bobby).mintFreeSkully()
+        await this.skullys.connect(this.bobby).mintSkully({ value: COST })
+        await this.skullys.connect(this.bobby).mintSkully({ value: COST })
+        await this.skullys.connect(this.bobby).mintSkully({ value: COST })
+        await this.skullys.connect(this.bobby).mintSkully({ value: COST })
+        await expectRevert(
+            this.skullys.connect(this.bobby).mintSkully({ value: COST }),
+            "Can't mint more than 5 Skullys"
+        )
     });
 
     it("In public-sale, can mint Skullys (multiple) whether whitelisted or not", async function () {
