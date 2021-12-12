@@ -51,6 +51,23 @@ describe("Full mint test harness for Skullys using auxiliary royalties contract"
         await this.payments.deployed()
     });
 
+    it("Emergency widthdraw works", async function () {
+        // initial bals
+        let artBal = await this.provider.getBalance(artist)
+        let devBal = await this.provider.getBalance(dev)
+
+        await this.alice.sendTransaction({ to: this.payments.address, value: COST })
+        await this.payments.connect(this.alice).emergencyWithdraw()
+
+        // post withdraw bals
+        artBal = (await this.provider.getBalance(artist)).sub(artBal)
+        devBal = (await this.provider.getBalance(dev)).sub(devBal)
+        // artist should have the full payments from minting plus the 75/COST from royalties
+        expect(artBal).to.equal(BigNumber.from(ethers.utils.parseEther("112.5")))
+        // dev should get 25/100 from royalties
+        expect(devBal).to.equal(BigNumber.from(ethers.utils.parseEther("37.5")))
+    });
+
     it("In public-sale, can mint Skullys (multiple) whether whitelisted or not", async function () {
         // get the original artist and developer balances before this test
         // these are leftover from previous tests and will be subtracted from balances below
@@ -154,6 +171,7 @@ describe("Full mint test harness for Skullys using auxiliary royalties contract"
         let bal420  = (await this.provider.getBalance(ownerOf420)).sub(origBal420)
         let bal666  = (await this.provider.getBalance(ownerOf666)).sub(origBal666)
         // artist should have the full payments from minting plus the 65/COST from royalties
+        //  - plus token69's share since it is held by an unpayable contract
         expect(artBal).to.equal(BigNumber.from(ethers.utils.parseEther("100.5")))
         // dev should get 25/100 from royalties
         expect(devBal).to.equal(BigNumber.from(ethers.utils.parseEther("37.5")))

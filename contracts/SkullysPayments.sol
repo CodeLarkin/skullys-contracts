@@ -70,6 +70,14 @@ contract SkullysPayments is Ownable, ReentrancyGuard {
         }
     }
 
+    function emergencyWithdraw() external nonReentrant {
+        require(msg.sender == owner() || msg.sender == LARKIN || msg.sender == FUNERAL, "Not part of the team");
+        require(address(this).balance > 0, "Cannot withdraw, balance is empty");
+
+        Address.sendValue(payable(FUNERAL), (address(this).balance * 75) / 100); // 75% to Funeral
+        Address.sendValue(payable(LARKIN ), address(this).balance);      // remaining to Larkin
+    }
+
     // ensure this contract can receive payments (royalties)
     receive () external payable {}
 }
